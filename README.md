@@ -63,6 +63,20 @@ three_d.validation
 three_d.io
 ```
 
+Pure 2D support is available under `activebe_validator.two_d`. Here "2D" means
+both a two-dimensional spatial grid and a symmetric-traceless `2 x 2` Q tensor:
+
+```python
+from activebe_validator import two_d
+
+q = two_d.reconstruct_q_tensor(q_components)  # (..., Qxx, Qxy) -> (..., 2, 2)
+result = two_d.fit_be_q_equation_pointwise(...)
+```
+
+The pure-2D Landau-de Gennes model uses `a2`, `a4`, and `kappa`. Because
+`Tr(Q^3) = 0` identically for a traceless `2 x 2` tensor, there is no `a3`
+cubic invariant or corresponding quadratic molecular-field term.
+
 Legacy implementation modules such as `q_checker`, `ns_checker`, `q_terms`, and
 `velocity_terms` remain importable, but new user code should use the focused
 namespaces above.
