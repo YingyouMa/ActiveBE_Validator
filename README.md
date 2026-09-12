@@ -1,25 +1,88 @@
-# ActiveBE_Validator
+# ActiveBE Validator
 
-Dedicated tooling for validating active Beris-Edwards equations against simulation outputs.
+`activebe-validator` is a lightweight Python package for validating active
+Beris-Edwards simulation outputs by reconstructing equation terms, recovering
+coefficients, and evaluating residuals independently of the simulation code.
 
-## Scope
+## Current scope
 
-This repository is intended to become a focused validator for:
+- Q-tensor equation checks
+- velocity-equation checks with active forcing and passive backflow
+- pointwise/strong-form fits
+- projected and local weak-form fits
+- processed-output discovery workflows
+- cross-solver validation using ANS, Ludwig, and similar active-nematics solvers
 
-- Q-tensor equation discovery and coefficient recovery
-- velocity-equation discovery with active forcing and passive backflow
-- strong-form and weak-form comparisons
-- cross-solver consistency checks across ANS, Ludwig, and other active-nematics solvers
+The current numerical implementation is the existing 3D validator. Dimension-independent finite-difference operators live in `activebe_validator.operators` so that a dedicated 2D implementation can be added without duplicating common numerical infrastructure.
 
-## Initial Direction
+## Package layout
 
-The first development phase will focus on:
+```text
+src/activebe_validator/
+    operators/          # dimension-independent differential operators
+    q_terms.py          # current 3D Beris-Edwards Q terms
+    velocity_terms.py   # current 3D velocity/stress terms
+    q_checker.py        # current 3D Q validators
+    ns_checker.py       # current 3D velocity validators
+    discovery.py        # processed-output workflows
+    residuals.py
+    two_d/              # reserved namespace for the next development phase
+    three_d/            # explicit namespace re-exporting the current 3D API
+```
 
-1. defining a clean input format for processed simulation snapshots
-2. separating strong-form and weak-form validators into explicit modules
-3. building a reproducible benchmark suite with known-good ANS and Ludwig cases
-4. adding reports that summarize recovered coefficients, residuals, and fit quality
+## Installation
 
-## Status
+```bash
+pip install -e .
+```
 
-Project scaffold created on August 7, 2026.
+For development tools:
+
+```bash
+pip install -e ".[dev]"
+```
+
+## Public API
+
+The package root is deliberately small. Prefer focused imports:
+
+```python
+from activebe_validator.io import discover_q_from_processed_npy
+from activebe_validator.terms.q import q_material_derivative
+from activebe_validator.validation.q import fit_be_q_equation_pointwise
+from activebe_validator.validation.velocity import fit_be_equation_velocity_pointwise
+```
+
+The current implementation is 3D and is also grouped explicitly as:
+
+```python
+from activebe_validator import three_d
+
+three_d.terms
+three_d.validation
+three_d.io
+```
+
+Legacy implementation modules such as `q_checker`, `ns_checker`, `q_terms`, and
+`velocity_terms` remain importable, but new user code should use the focused
+namespaces above.
+
+## Input convention
+
+The high-level NumPy workflow expects chronological 3D stacks:
+
+```text
+Q components: (T, Nx, Ny, Nz, 5)  -> (Qxx, Qxy, Qxz, Qyy, Qyz)
+velocity:     (T, Nx, Ny, Nz, 3)  -> (ux, uy, uz)
+```
+
+The full symmetric traceless Q tensor is reconstructed internally.
+
+## Development checks
+
+```bash
+pytest
+ruff check src tests
+black --check src tests
+python -m build
+```

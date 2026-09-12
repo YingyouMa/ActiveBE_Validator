@@ -2,8 +2,9 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 .jupyter_runtime/
-*.npy
-*.npz
-*.csv
-*.dat
-!example/data/**/*.npy
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+!examples/data/**/*.npy
