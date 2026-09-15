@@ -28,7 +28,7 @@ class PressureLeftVelocityDiscoveryResult:
 @dataclass(frozen=True)
 class InferredQMaterialParameters:
     gamma: float
-    lambda_r: float
+    lambda_R: float
     lambda_1: float
     lambda_2: float
     lambda_3: float
@@ -563,7 +563,7 @@ def _infer_q_material_parameters(
         raise ValueError("gamma must be nonzero to infer a2, a3, a4, and kappa.")
     return InferredQMaterialParameters(
         gamma=float(gamma),
-        lambda_r=float(q_result.omega_q_coefficient),
+        lambda_R=float(q_result.omega_q_coefficient),
         lambda_1=float(q_result.e_plain_coefficient),
         lambda_2=float(q_result.e_q_coefficient),
         lambda_3=float(q_result.q_colon_e_q_coefficient),
@@ -699,7 +699,7 @@ def discover_q_from_processed_npy(
     result = {
         "coefficients": {
             "lambda_c": q_result.material_q_coefficient,
-            "lambda_r": parameters.lambda_r,
+            "lambda_R": parameters.lambda_R,
             "lambda_1": parameters.lambda_1,
             "lambda_2": parameters.lambda_2,
             "lambda_3": parameters.lambda_3,

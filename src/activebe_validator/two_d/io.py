@@ -73,7 +73,7 @@ def discover_q_from_processed_npy(
     result: dict[str, dict[str, object]] = {
         "coefficients": {
             "lambda_c": fit.material_q_coefficient,
-            "lambda_r": fit.omega_q_coefficient,
+            "lambda_R": fit.omega_q_coefficient,
             "lambda_1": fit.e_plain_coefficient,
             "lambda_3": fit.q_colon_e_q_coefficient,
             "a2": -fit.bulk_linear_coefficient / gamma,
