@@ -1,11 +1,11 @@
-"""Lightweight validation tools for active Beris-Edwards simulations.
+"""Validation tools for active Beris-Edwards simulations.
 
-The package root is intentionally small. Use :mod:`activebe_validator.terms`
-for physical term builders, :mod:`activebe_validator.validation` for equation
-checks, and :mod:`activebe_validator.io` for processed-output workflows.
+The supported user API is dimension-explicit: use
+:mod:`activebe_validator.two_d` or :mod:`activebe_validator.three_d`.
 """
 
+from . import three_d, two_d
 from ._version import __version__
 
-__all__ = ["__version__"]
+__all__ = ["__version__", "three_d", "two_d"]
 

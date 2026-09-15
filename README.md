@@ -1,5 +1,11 @@
 # ActiveBE Validator
 
+The package provides separate pure-2D and 3D validation APIs. The 2D
+implementation has additionally been cross-validated against an independent
+PSANC2D GPU solver to double-precision roundoff. See
+[`docs/validation_2d.md`](docs/validation_2d.md) and
+[`docs/validation_3d.md`](docs/validation_3d.md) for validation details.
+
 `activebe-validator` is a lightweight Python package for validating active
 Beris-Edwards simulation outputs by reconstructing equation terms, recovering
 coefficients, and evaluating residuals independently of the simulation code.
@@ -13,21 +19,22 @@ coefficients, and evaluating residuals independently of the simulation code.
 - processed-output discovery workflows
 - cross-solver validation using ANS, Ludwig, and similar active-nematics solvers
 
-The current numerical implementation is the existing 3D validator. Dimension-independent finite-difference operators live in `activebe_validator.operators` so that a dedicated 2D implementation can be added without duplicating common numerical infrastructure.
+Both pure 2D and 3D implementations are available. Dimension-independent
+differential operators are shared internally, while the user-facing API is
+dimension-explicit.
 
 ## Package layout
 
 ```text
 src/activebe_validator/
-    operators/          # dimension-independent differential operators
-    q_terms.py          # current 3D Beris-Edwards Q terms
-    velocity_terms.py   # current 3D velocity/stress terms
-    q_checker.py        # current 3D Q validators
-    ns_checker.py       # current 3D velocity validators
-    discovery.py        # processed-output workflows
-    residuals.py
-    two_d/              # reserved namespace for the next development phase
-    three_d/            # explicit namespace re-exporting the current 3D API
+    two_d/              # pure-2D Q, velocity, I/O, and validation API
+    three_d/            # public 3D API
+    operators/          # shared differential operators
+    q_terms.py          # internal 3D Q-term implementation
+    velocity_terms.py   # internal 3D velocity/stress implementation
+    q_checker.py        # internal 3D Q regression implementation
+    ns_checker.py       # internal 3D velocity regression implementation
+    discovery.py        # processed-output workflow implementation
 ```
 
 ## Installation
@@ -44,23 +51,25 @@ pip install -e ".[dev]"
 
 ## Public API
 
-The package root is deliberately small. Prefer focused imports:
+The package root is deliberately small. User code should choose the spatial
+dimension explicitly:
 
 ```python
-from activebe_validator.io import discover_q_from_processed_npy
-from activebe_validator.terms.q import q_material_derivative
-from activebe_validator.validation.q import fit_be_q_equation_pointwise
-from activebe_validator.validation.velocity import fit_be_equation_velocity_pointwise
+from activebe_validator import three_d, two_d
+
+result_3d = three_d.fit_be_q_equation_pointwise(...)
+result_2d = two_d.fit_be_q_equation_pointwise(...)
 ```
 
-The current implementation is 3D and is also grouped explicitly as:
+The 3D namespace also exposes the main velocity-equation fits and processed-Q
+discovery workflow:
 
 ```python
 from activebe_validator import three_d
 
-three_d.terms
-three_d.validation
-three_d.io
+three_d.fit_be_equation_velocity_pointwise(...)
+three_d.fit_be_equation_velocity_local_weak_form(...)
+three_d.discover_q_from_processed_npy(...)
 ```
 
 Pure 2D support is available under `activebe_validator.two_d`. Here "2D" means
@@ -77,9 +86,23 @@ The pure-2D Landau-de Gennes model uses `a2`, `a4`, and `kappa`. Because
 `Tr(Q^3) = 0` identically for a traceless `2 x 2` tensor, there is no `a3`
 cubic invariant or corresponding quadratic molecular-field term.
 
-Legacy implementation modules such as `q_checker`, `ns_checker`, `q_terms`, and
-`velocity_terms` remain importable, but new user code should use the focused
-namespaces above.
+Top-level implementation modules such as `q_checker`, `ns_checker`, `q_terms`,
+and `velocity_terms` are internal implementation details rather than supported
+public API. New code should use `two_d` or `three_d`.
+
+## Tutorials
+
+The full worked tutorials live in `examples/tutorials/`:
+
+- `q_validator_3d_introduction.ipynb` explains the 3D Q-equation validator,
+  coefficient recovery, the processed-`.npy` workflow, and ANS/Ludwig examples.
+- `velocity_validator_3d_introduction.ipynb` explains the 3D velocity validator,
+  local weak forms, pressure elimination, viscosity normalization, passive
+  backflow, and a Ludwig example.
+
+Pure-2D usage is summarized in `examples/tutorials/README.md` and validated in
+`docs/validation_2d.md`. The 2D API is intentionally separate because a
+traceless symmetric `2 x 2` Q tensor has no cubic invariant `Tr(Q^3)`.
 
 ## Input convention
 

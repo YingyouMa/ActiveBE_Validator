@@ -1276,16 +1276,16 @@ def fit_be_q_equation_local_weak_form(
         f"{len(patch_specs)} patches, half_widths={patch_half_widths}, strides={patch_strides}"
     )
 
-    local_targets: list[np.ndarray] = []
-    local_material_q: list[np.ndarray] = []
-    local_omega_q: list[np.ndarray] = []
-    local_e_q: list[np.ndarray] = []
-    local_q_colon_e_q: list[np.ndarray] = []
-    local_flow_alignment: list[np.ndarray] = []
-    local_bulk_linear: list[np.ndarray] = []
-    local_bulk_quadratic: list[np.ndarray] = []
-    local_bulk_cubic: list[np.ndarray] = []
-    local_elastic_l1: list[np.ndarray] = []
+    integrated_targets: list[np.ndarray] = []
+    integrated_material_q: list[np.ndarray] = []
+    integrated_omega_q: list[np.ndarray] = []
+    integrated_e_q: list[np.ndarray] = []
+    integrated_q_colon_e_q: list[np.ndarray] = []
+    integrated_flow_alignment: list[np.ndarray] = []
+    integrated_bulk_linear: list[np.ndarray] = []
+    integrated_bulk_quadratic: list[np.ndarray] = []
+    integrated_bulk_cubic: list[np.ndarray] = []
+    integrated_elastic_l1: list[np.ndarray] = []
 
     patch_loop_start = time.perf_counter()
     for patch_index, patch in enumerate(patch_specs, start=1):
@@ -1387,7 +1387,7 @@ def fit_be_q_equation_local_weak_form(
                 test_field_spatial[np.newaxis, ...],
                 local_dt_q_target.shape,
             )
-            local_targets.append(
+            integrated_targets.append(
                 tensor_weak_inner_product(
                     test_field,
                     local_dt_q_target,
@@ -1395,7 +1395,7 @@ def fit_be_q_equation_local_weak_form(
                     spatial_axes=spatial_axes,
                 )
             )
-            local_material_q.append(
+            integrated_material_q.append(
                 tensor_weak_inner_product(
                     test_field,
                     local_material_q,
@@ -1403,7 +1403,7 @@ def fit_be_q_equation_local_weak_form(
                     spatial_axes=spatial_axes,
                 )
             )
-            local_omega_q.append(
+            integrated_omega_q.append(
                 tensor_weak_inner_product(
                     test_field,
                     local_omega_q,
@@ -1411,7 +1411,7 @@ def fit_be_q_equation_local_weak_form(
                     spatial_axes=spatial_axes,
                 )
             )
-            local_e_q.append(
+            integrated_e_q.append(
                 tensor_weak_inner_product(
                     test_field,
                     local_e_q,
@@ -1420,7 +1420,7 @@ def fit_be_q_equation_local_weak_form(
                 )
             )
             if local_q_colon_e_q_term is not None:
-                local_q_colon_e_q.append(
+                integrated_q_colon_e_q.append(
                     tensor_weak_inner_product(
                         test_field,
                         local_q_colon_e_q_term,
@@ -1429,7 +1429,7 @@ def fit_be_q_equation_local_weak_form(
                     )
                 )
             if local_flow_alignment_term is not None:
-                local_flow_alignment.append(
+                integrated_flow_alignment.append(
                     tensor_weak_inner_product(
                         test_field,
                         local_flow_alignment_term,
@@ -1437,7 +1437,7 @@ def fit_be_q_equation_local_weak_form(
                         spatial_axes=spatial_axes,
                     )
                 )
-            local_bulk_linear.append(
+            integrated_bulk_linear.append(
                 tensor_weak_inner_product(
                     test_field,
                     local_bulk_linear_term,
@@ -1445,7 +1445,7 @@ def fit_be_q_equation_local_weak_form(
                     spatial_axes=spatial_axes,
                 )
             )
-            local_bulk_quadratic.append(
+            integrated_bulk_quadratic.append(
                 tensor_weak_inner_product(
                     test_field,
                     local_bulk_quadratic_term,
@@ -1453,7 +1453,7 @@ def fit_be_q_equation_local_weak_form(
                     spatial_axes=spatial_axes,
                 )
             )
-            local_bulk_cubic.append(
+            integrated_bulk_cubic.append(
                 tensor_weak_inner_product(
                     test_field,
                     local_bulk_cubic_term,
@@ -1461,7 +1461,7 @@ def fit_be_q_equation_local_weak_form(
                     spatial_axes=spatial_axes,
                 )
             )
-            local_elastic_l1.append(
+            integrated_elastic_l1.append(
                 tensor_weak_inner_product(
                     test_field,
                     local_elastic_l1_term,
@@ -1486,20 +1486,20 @@ def fit_be_q_equation_local_weak_form(
             )
 
     emit_progress("Building regression arrays from local tensor weak-form samples...")
-    local_target = np.stack(local_targets, axis=0)
-    local_material_q_feature = np.stack(local_material_q, axis=0)
-    local_omega_q_feature = np.stack(local_omega_q, axis=0)
-    local_e_q_feature = np.stack(local_e_q, axis=0)
+    local_target = np.stack(integrated_targets, axis=0)
+    local_material_q_feature = np.stack(integrated_material_q, axis=0)
+    local_omega_q_feature = np.stack(integrated_omega_q, axis=0)
+    local_e_q_feature = np.stack(integrated_e_q, axis=0)
     local_q_colon_e_q_feature = (
-        np.stack(local_q_colon_e_q, axis=0) if include_q_colon_e_q else None
+        np.stack(integrated_q_colon_e_q, axis=0) if include_q_colon_e_q else None
     )
     local_flow_alignment_feature = (
-        np.stack(local_flow_alignment, axis=0) if include_flow_alignment else None
+        np.stack(integrated_flow_alignment, axis=0) if include_flow_alignment else None
     )
-    local_bulk_linear_feature = np.stack(local_bulk_linear, axis=0)
-    local_bulk_quadratic_feature = np.stack(local_bulk_quadratic, axis=0)
-    local_bulk_cubic_feature = np.stack(local_bulk_cubic, axis=0)
-    local_elastic_l1_feature = np.stack(local_elastic_l1, axis=0)
+    local_bulk_linear_feature = np.stack(integrated_bulk_linear, axis=0)
+    local_bulk_quadratic_feature = np.stack(integrated_bulk_quadratic, axis=0)
+    local_bulk_cubic_feature = np.stack(integrated_bulk_cubic, axis=0)
+    local_elastic_l1_feature = np.stack(integrated_elastic_l1, axis=0)
 
     masked_target = local_target
     masked_material_q = local_material_q_feature

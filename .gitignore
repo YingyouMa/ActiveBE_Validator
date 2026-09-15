@@ -7,4 +7,5 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+.psanc_transfer/
 !examples/data/**/*.npy
